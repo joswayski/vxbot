@@ -1,7 +1,7 @@
 ### VXBot
 
 
-Replaces `twitter.com` and `x.com` links with [vxtwitter.com](https://github.com/dylanpdx/BetterTwitFix) instead.
+Replaces `twitter.com` and `x.com` links in Discord with [vxtwitter.com](https://github.com/dylanpdx/BetterTwitFix) instead.
 
 
 
