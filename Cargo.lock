@@ -274,6 +274,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "dashmap"
+version = "6.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5041cc499144891f3790297212f32a74fb938e5136a14943f338ef9e0ae276cf"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+ "hashbrown 0.14.5",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
+]
+
+[[package]]
 name = "data-encoding"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -882,7 +896,7 @@ checksum = "c325dfab65f261f386debee8b0969da215b3fa0037e74c8a1234db7ba986d803"
 dependencies = [
  "crossbeam-channel",
  "crossbeam-utils",
- "dashmap",
+ "dashmap 5.5.3",
  "skeptic",
  "smallvec",
  "tagptr",
@@ -1342,7 +1356,7 @@ dependencies = [
  "bytes",
  "chrono",
  "command_attr",
- "dashmap",
+ "dashmap 5.5.3",
  "flate2",
  "futures",
  "fxhash",
@@ -1757,7 +1771,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da66c62c5b7017a2787e77373c03e6a5aafde77a73bff1ff96e91cd2e128179"
 dependencies = [
  "chrono",
- "dashmap",
+ "dashmap 5.5.3",
  "hashbrown 0.14.5",
  "mini-moka",
  "parking_lot",
@@ -1837,6 +1851,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 name = "vxbot"
 version = "0.1.0"
 dependencies = [
+ "dashmap 6.1.0",
  "dotenvy",
  "futures",
  "serenity",

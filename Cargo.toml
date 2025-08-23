@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+dashmap = "6.1.0"
 dotenvy = "0.15.7"
 futures = "0.3.31"
 serenity = "0.12.4"
