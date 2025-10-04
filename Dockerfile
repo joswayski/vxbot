@@ -11,12 +11,16 @@ COPY Cargo.toml Cargo.lock ./
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 
 # Build dependencies (this layer will be cached if Cargo.toml doesn't change)
-RUN cargo build --release && rm src/main.rs
+# IMPORTANT: We must remove not just the dummy source file, but also the compiled
+# dummy binary and its dependencies. Otherwise, when we copy the real source code
+# and rebuild, Cargo may think the binary is already up-to-date and skip recompiling,
+# resulting in the dummy "hello world" binary being used instead of our actual bot code.
+RUN cargo build --release && rm -rf src target/release/vxbot* target/release/deps/vxbot*
 
-# Copy the source code
+# Copy the actual source code
 COPY src ./src
 
-# Build the application
+# Build the actual application (now guaranteed to recompile with the real source)
 RUN cargo build --release
 
 # Runtime stage - use a smaller base image

@@ -97,22 +97,34 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
+    eprintln!("Starting vxbot...");
     dotenv().ok();
 
+    eprintln!("Loading DISCORD_TOKEN from environment...");
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+    eprintln!("Token loaded successfully");
 
     let intents = GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT
         | GatewayIntents::GUILDS
         | GatewayIntents::GUILD_WEBHOOKS;
 
-    let mut client = Client::builder(&token, intents)
+    eprintln!("Creating client...");
+    let mut client = match Client::builder(&token, intents)
         .event_handler(Handler)
         .type_map_insert::<WebhookCache>(DashMap::new())
         .await
-        .expect("Err creating client");
+    {
+        Ok(client) => client,
+        Err(e) => {
+            eprintln!("Error creating client: {e:?}");
+            return;
+        }
+    };
 
+    eprintln!("Starting client...");
     if let Err(why) = client.start().await {
-        println!("Client error: {why:?}");
+        eprintln!("Client error: {why:?}");
     }
+    eprintln!("Client stopped");
 }
