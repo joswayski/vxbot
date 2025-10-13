@@ -9,8 +9,8 @@ use serenity::model::webhook::Webhook;
 use serenity::prelude::*;
 struct Handler;
 
-const X: &'static str = "x.com";
-const TWITTER: &'static str = "twitter.com";
+const X: &'static str = "https://x.com";
+const TWITTER: &'static str = "https://twitter.com";
 const VXTWITTER: &'static str = "vxtwitter.com";
 const VXBOT: &'static str = "vxbot";
 
