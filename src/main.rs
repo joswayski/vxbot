@@ -2,6 +2,7 @@ use std::env;
 
 use dashmap::DashMap;
 use dotenvy::dotenv;
+use regex::Regex;
 use serenity::all::{ChannelId, CreateAllowedMentions, CreateWebhook, ExecuteWebhook};
 use serenity::async_trait;
 use serenity::model::channel::Message;
@@ -9,8 +10,6 @@ use serenity::model::webhook::Webhook;
 use serenity::prelude::*;
 struct Handler;
 
-const X: &'static str = "https://x.com";
-const TWITTER: &'static str = "https://twitter.com";
 const VXTWITTER: &'static str = "vxtwitter.com";
 const VXBOT: &'static str = "vxbot";
 
@@ -57,16 +56,32 @@ impl EventHandler for Handler {
             // Easy skip
             return;
         }
-        if !(msg.content.contains(TWITTER) && !msg.content.contains(VXTWITTER))
-            && !msg.content.contains(X)
-        {
+
+        // Regex to match twitter.com or x.com URLs (with optional subdomains)
+        // Matches: https://twitter.com/..., http://x.com/..., https://mobile.twitter.com/..., etc.
+        // Uses word boundaries to avoid matching domains like "phoronix.com"
+        let re = Regex::new(r"https?://([a-zA-Z0-9-]+\.)?(twitter\.com|x\.com)(/[^\s]*)?").unwrap();
+
+        // Check if there are any twitter/x URLs
+        if !re.is_match(&msg.content) {
             return;
         }
 
-        let new_msg = msg
-            .content
-            .replace(TWITTER, VXTWITTER)
-            .replace(X, VXTWITTER);
+        // Skip if already converted to vxtwitter
+        if msg.content.contains(VXTWITTER) {
+            return;
+        }
+
+        // Replace twitter.com and x.com domains with vxtwitter.com
+        let new_msg = re
+            .replace_all(&msg.content, |caps: &regex::Captures| {
+                format!(
+                    "https://{}{}",
+                    VXTWITTER,
+                    caps.get(3).map_or("", |m| m.as_str())
+                )
+            })
+            .to_string();
 
         let webhook = match get_webhook_for_channel(&ctx, msg.channel_id).await {
             Ok(webhook) => webhook,
