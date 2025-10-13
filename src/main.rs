@@ -59,8 +59,8 @@ impl EventHandler for Handler {
 
         // Regex to match twitter.com or x.com URLs (with optional subdomains)
         // Matches: https://twitter.com/..., http://x.com/..., https://mobile.twitter.com/..., etc.
-        // Uses word boundaries to avoid matching domains like "phoronix.com"
-        let re = Regex::new(r"https?://([a-zA-Z0-9-]+\.)?(twitter\.com|x\.com)(/[^\s]*)?").unwrap();
+        // Specifically matches 'twitter' or 'x' as the domain name to avoid matching "phoronix.com"
+        let re = Regex::new(r"https?://(?:([a-zA-Z0-9-]+)\.)?(twitter|x)\.com(/[^\s]*)?").unwrap();
 
         // Check if there are any twitter/x URLs
         if !re.is_match(&msg.content) {
@@ -75,6 +75,7 @@ impl EventHandler for Handler {
         // Replace twitter.com and x.com domains with vxtwitter.com
         let new_msg = re
             .replace_all(&msg.content, |caps: &regex::Captures| {
+                // Capture group 3 is the path (group 1 is subdomain, group 2 is twitter|x)
                 format!(
                     "https://{}{}",
                     VXTWITTER,
