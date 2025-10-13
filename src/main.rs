@@ -92,9 +92,16 @@ impl EventHandler for Handler {
             }
         };
 
+        // Use the member's display name (nickname if set, otherwise username)
+        let display_name = msg
+            .member
+            .as_ref()
+            .and_then(|m| m.nick.as_deref())
+            .unwrap_or(&msg.author.name);
+
         let builder = ExecuteWebhook::new()
             .content(new_msg)
-            .username(&msg.author.name)
+            .username(display_name)
             .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles())
             .avatar_url(msg.author.face());
 
