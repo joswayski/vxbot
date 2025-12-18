@@ -12,6 +12,7 @@ struct Handler;
 
 const VXTWITTER: &'static str = "vxtwitter.com";
 const VXBOT: &'static str = "vxbot";
+const FACEBED: &'static str = "facebed.com";
 
 struct WebhookCache;
 impl TypeMapKey for WebhookCache {
@@ -60,29 +61,43 @@ impl EventHandler for Handler {
         // Regex to match twitter.com or x.com URLs (with optional subdomains)
         // Matches: https://twitter.com/..., http://x.com/..., https://mobile.twitter.com/..., etc.
         // Specifically matches 'twitter' or 'x' as the domain name to avoid matching "phoronix.com"
-        let re = Regex::new(r"https?://(?:([a-zA-Z0-9-]+)\.)?(twitter|x)\.com(/[^\s]*)?").unwrap();
+        let twitter_regex =
+            Regex::new(r"https?://(?:([a-zA-Z0-9-]+)\.)?(twitter|x)\.com(/[^\s]*)?").unwrap();
+        let facebook_regex =
+            Regex::new(r"https?://(?:[a-zA-Z0-9-]+\.)?facebook\.com(/[^\s]*)?").unwrap();
 
-        // Check if there are any twitter/x URLs
-        if !re.is_match(&msg.content) {
+        let has_twitter = twitter_regex.is_match(&msg.content);
+        let has_facebook = facebook_regex.is_match(&msg.content);
+
+        // If nothing to match, return
+        if !has_twitter && !has_facebook {
             return;
         }
 
-        // Skip if already converted to vxtwitter
-        if msg.content.contains(VXTWITTER) {
-            return;
-        }
+        let mut new_msg = msg.content.clone();
 
-        // Replace twitter.com and x.com domains with vxtwitter.com
-        let new_msg = re
-            .replace_all(&msg.content, |caps: &regex::Captures| {
-                // Capture group 3 is the path (group 1 is subdomain, group 2 is twitter|x)
-                format!(
-                    "https://{}{}",
-                    VXTWITTER,
-                    caps.get(3).map_or("", |m| m.as_str())
-                )
-            })
-            .to_string();
+        if has_twitter {
+            new_msg = twitter_regex
+                .replace_all(&msg.content, |caps: &regex::Captures| {
+                    // Capture group 3 is the path (group 1 is subdomain, group 2 is twitter|x)
+                    format!(
+                        "https://{}{}",
+                        VXTWITTER,
+                        caps.get(3).map_or("", |m| m.as_str())
+                    )
+                })
+                .to_string();
+        }
+        if has_facebook {
+            new_msg = facebook_regex
+                .replace_all(&new_msg, |caps: &regex::Captures| {
+                    format!(
+                        "https://facebed.com{}",
+                        caps.get(1).map_or("", |m| m.as_str())
+                    )
+                })
+                .to_string();
+        }
 
         let webhook = match get_webhook_for_channel(&ctx, msg.channel_id).await {
             Ok(webhook) => webhook,
