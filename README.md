@@ -1,7 +1,9 @@
 ## VXBot
 
 
-Replaces `twitter.com` and `x.com` links in Discord with [vxtwitter.com](https://github.com/dylanpdx/BetterTwitFix) instead so that video embeds work properly.
+Replaces links in Discord so that video embeds work properly:
+- `twitter.com` and `x.com` with [vxtwitter.com](https://github.com/dylanpdx/BetterTwitFix)
+- `facebook.com` with [facebed.com](https://github.com/facebed/facebed)
 
 
 ![result.gif](./result.gif)
