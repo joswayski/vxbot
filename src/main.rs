@@ -99,7 +99,6 @@ impl EventHandler for Handler {
                 .to_string();
         }
 
-        // Replace twitter.com and x.com domains with vxtwitter.com
         let webhook = match get_webhook_for_channel(&ctx, msg.channel_id).await {
             Ok(webhook) => webhook,
             Err(why) => {
