@@ -107,9 +107,15 @@ impl EventHandler for Handler {
             }
         };
 
+        let display_name = msg
+            .author_nick(&ctx.http)
+            .await
+            .or(msg.author.global_name.clone())
+            .unwrap_or_else(|| msg.author.name.clone());
+
         let builder = ExecuteWebhook::new()
             .content(new_msg)
-            .username(&msg.author.name)
+            .username(display_name)
             .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles())
             .avatar_url(msg.author.face());
 
