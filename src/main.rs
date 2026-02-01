@@ -1,4 +1,5 @@
 use std::env;
+use std::sync::LazyLock;
 
 use dashmap::DashMap;
 use dotenvy::dotenv;
@@ -8,11 +9,26 @@ use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::webhook::Webhook;
 use serenity::prelude::*;
-struct Handler;
 
-const VXTWITTER: &'static str = "vxtwitter.com";
-const VXBOT: &'static str = "vxbot";
-const FACEBED: &'static str = "facebed.com";
+const VXTWITTER: &str = "vxtwitter.com";
+const VXBOT: &str = "vxbot";
+const FACEBED: &str = "facebed.com";
+const INSTABED: &str = "eeinstagram.com";
+
+// Static regexes - compiled once at first use
+static TWITTER_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    // Matches: https://twitter.com/..., http://x.com/..., https://mobile.twitter.com/..., etc.
+    // Specifically matches 'twitter' or 'x' as the domain name to avoid matching "phoronix.com"
+    Regex::new(r"https?://(?:([a-zA-Z0-9-]+)\.)?(twitter|x)\.com(/[^\s]*)?").unwrap()
+});
+
+static FACEBOOK_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"https?://(?:[a-zA-Z0-9-]+\.)?facebook\.com(/[^\s]*)?").unwrap());
+
+static INSTAGRAM_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"https?://(?:[a-zA-Z0-9-]+\.)?instagram\.com(/[^\s]*)?").unwrap());
+
+struct Handler;
 
 struct WebhookCache;
 impl TypeMapKey for WebhookCache {
@@ -58,27 +74,20 @@ impl EventHandler for Handler {
             return;
         }
 
-        // Regex to match twitter.com or x.com URLs (with optional subdomains)
-        // Matches: https://twitter.com/..., http://x.com/..., https://mobile.twitter.com/..., etc.
-        // Specifically matches 'twitter' or 'x' as the domain name to avoid matching "phoronix.com"
-        let twitter_regex =
-            Regex::new(r"https?://(?:([a-zA-Z0-9-]+)\.)?(twitter|x)\.com(/[^\s]*)?").unwrap();
-        let facebook_regex =
-            Regex::new(r"https?://(?:[a-zA-Z0-9-]+\.)?facebook\.com(/[^\s]*)?").unwrap();
-
-        let has_twitter = twitter_regex.is_match(&msg.content);
-        let has_facebook = facebook_regex.is_match(&msg.content);
+        let has_twitter = TWITTER_REGEX.is_match(&msg.content);
+        let has_facebook = FACEBOOK_REGEX.is_match(&msg.content);
+        let has_instagram = INSTAGRAM_REGEX.is_match(&msg.content);
 
         // If nothing to match, return
-        if !has_twitter && !has_facebook {
+        if !has_twitter && !has_facebook && !has_instagram {
             return;
         }
 
         let mut new_msg = msg.content.clone();
 
         if has_twitter {
-            new_msg = twitter_regex
-                .replace_all(&msg.content, |caps: &regex::Captures| {
+            new_msg = TWITTER_REGEX
+                .replace_all(&new_msg, |caps: &regex::Captures| {
                     // Capture group 3 is the path (group 1 is subdomain, group 2 is twitter|x)
                     format!(
                         "https://{}{}",
@@ -89,10 +98,22 @@ impl EventHandler for Handler {
                 .to_string();
         }
         if has_facebook {
-            new_msg = facebook_regex
+            new_msg = FACEBOOK_REGEX
                 .replace_all(&new_msg, |caps: &regex::Captures| {
                     format!(
-                        "https://facebed.com{}",
+                        "https://{}{}",
+                        FACEBED,
+                        caps.get(1).map_or("", |m| m.as_str())
+                    )
+                })
+                .to_string();
+        }
+        if has_instagram {
+            new_msg = INSTAGRAM_REGEX
+                .replace_all(&new_msg, |caps: &regex::Captures| {
+                    format!(
+                        "https://{}{}",
+                        INSTABED,
                         caps.get(1).map_or("", |m| m.as_str())
                     )
                 })
