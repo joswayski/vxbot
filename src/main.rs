@@ -25,8 +25,10 @@ static TWITTER_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 static FACEBOOK_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"https?://(?:[a-zA-Z0-9-]+\.)?facebook\.com(/[^\s]*)?").unwrap());
 
-static INSTAGRAM_REGEX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"https?://(?:[a-zA-Z0-9-]+\.)?instagram\.com(/[^\s]*)?").unwrap());
+static INSTAGRAM_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    // Only match content URLs (posts, reels, stories, tv), not profile URLs
+    Regex::new(r"https?://(?:[a-zA-Z0-9-]+\.)?instagram\.com(/(p|reel|reels|tv|stories)/[^\s]*)").unwrap()
+});
 
 struct Handler;
 
